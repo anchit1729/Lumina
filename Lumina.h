@@ -7,5 +7,6 @@
 
 #include <cmath>
 #include <iostream>
+#include <fstream>
 
 #endif //LUMINA_LUMINA_H

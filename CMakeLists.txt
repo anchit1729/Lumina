@@ -7,4 +7,4 @@ include_directories(.)
 
 add_executable(Lumina
         Vector3.cpp
-        Vector3.h Lumina.h main.cpp)
+        Vector3.h Lumina.h main.cpp Ray.h)
