@@ -35,25 +35,31 @@ color3 ray_color(const ray& r, const hittable& world)  {
 }
 
 int main() {
+    std::cerr << "Setting up image attributes...\n";
     // Image dimensions
     const auto aspect_ratio = 16.0/9.0;
     const int image_width = 400;
     const int image_height = static_cast<int>(image_width / aspect_ratio);
     const int samples_per_pixel = 100;
 
+    std::cerr << "Building world scene...\n";
     // World Definition
     hittable_list world;
     world.add(make_shared<sphere>(point3(0, 0, -1), 0.5));
     world.add(make_shared<sphere>(point3(0, -100.5, -1), 100));
 
+    std::cerr << "Creating camera...\n";
     // Camera
     camera camera;
 
+    std::cerr << "Creating output file...\n";
     // Draw the image
     // Set up file to write to
     std::ofstream image_file("img.ppm");
     // PPM format header
     image_file << "P3\n" << image_width << ' ' << image_height << "\n255\n";
+
+    std::cerr << "Rendering image...\n";
     for (int j = image_height-1; j >= 0; --j) {
         std::cerr << "\rScanlines remaining: " << j << ' ' << std::flush;
         for (int i = 0; i < image_width; ++i) {
