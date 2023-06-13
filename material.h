@@ -33,14 +33,49 @@ public:
 // Class definition for metallic/perfectly reflective materials
 class metal : public material   {
 public:
-    color3 albedo;
-    metal(const color3& color): albedo(color) {}
+    color3 albedo; // for base color of metal
+    double fuzz; // for blurriness of reflection from metal
+    metal(const color3& color, const double f): albedo(color), fuzz(f < 1 ? f : 1) {}
     virtual bool scatter(const ray& ray_in, const hit_record& hit_rec, color3& attenuation, ray& scattered_light) const override    {
         vec3 reflected = reflect(unit(ray_in.direction), hit_rec.normal);
         point3 origin = hit_rec.point;
-        scattered_light = ray(origin, reflected);
+        vec3 direction = reflected + fuzz * random_in_unit_sphere();
+        scattered_light = ray(origin, direction);
         attenuation = albedo;
         return (dot(scattered_light.direction, hit_rec.normal) > 0);
+    }
+};
+
+//Class definition for dielectric (clear/translucent) materials (e.g. glass, diamond etc.)
+class dielectric: public material   {
+public:
+    double eta; // refractive index
+    dielectric(const double n): eta(n) {}
+    virtual bool scatter(const ray& r_in, const hit_record& hit_rec, color3& attenuation, ray& scattered_light) const override  {
+        attenuation = color3(1.0, 1.0, 1.0);
+        double refraction_ratio = hit_rec.front_face ? (1.0 / eta) : eta;
+        double cos_theta = fmin(dot(-r_in.direction, hit_rec.normal), 1.0);
+        double sin_theta = sqrt(1.0 - cos_theta * cos_theta);
+        vec3 direction;
+        vec3 unit_direction = unit(r_in.direction);
+        bool no_refraction = refraction_ratio * sin_theta > 1.0;
+        if (no_refraction || reflectance(cos_theta, refraction_ratio) > random_double())
+            // reflection must occur
+            direction = reflect(unit_direction, hit_rec.normal);
+        else
+            // can refract light here
+            direction = refract(unit_direction, hit_rec.normal, refraction_ratio);
+        point3 point = hit_rec.point;
+        scattered_light = ray(point, direction);
+        return true;
+    }
+private:
+    static double reflectance(double cos, double eta)   {
+        // Christophe Schlick's polynomial approximation for when and how much a dielectric reflects
+        // Source: https://en.wikipedia.org/wiki/Schlick%27s_approximation
+        auto r0 = (1 - eta) / (1 + eta);
+        r0 *= r0;
+        return r0 + (1 - r0) * pow(1 - cos, 5);
     }
 };
 
