@@ -14,6 +14,10 @@ public:
     double x, y, z;
     vec3(): x(0), y(0), z(0) {}
     vec3(double xx, double yy, double zz): x(xx), y(yy), z(zz) {}
+    bool near_zero()    {
+        const auto epsilon = 1e-8;
+        return (fabs(x) < epsilon) && (fabs(y) < epsilon) && (fabs(z) < epsilon);
+    }
     vec3 operator-() const { return vec3(-x, -y, -z); }
     double operator[](int i) const {
         if (i == 0) return x;
@@ -49,11 +53,17 @@ public:
         z /= t;
         return *this;
     }
-    double squaredLength() const  {
+    double length_squared() const  {
         return x*x + y*y + z*z;
     }
     double length() const {
-        return sqrt(squaredLength());
+        return sqrt(length_squared());
+    }
+    inline static vec3 random() {
+        return {random_double(), random_double(), random_double()};
+    }
+    inline static vec3 random(double min, double max)   {
+        return {random_double(min, max), random_double(min, max), random_double(min, max)};
     }
 };
 
@@ -105,5 +115,23 @@ inline vec3 cross(const vec3 &u, const vec3 &v)    {
 inline vec3 unit(const vec3 &v)  {
     return v / v.length();
 }
+
+inline vec3 random_in_unit_sphere()    {
+    while (true)    {
+        vec3 guess = vec3::random(-1, 1);
+        if (guess.length_squared() <= 1)  {
+            return guess;
+        }
+    }
+}
+
+vec3 random_unit_vector()   {
+    return unit(random_in_unit_sphere());
+}
+
+vec3 reflect(const vec3& v, const vec3& n)  {
+    return v - 2 * dot(v, n) * n;
+}
+
 
 #endif //LUMINA_VECTOR_H

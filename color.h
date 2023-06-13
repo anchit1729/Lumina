@@ -13,11 +13,11 @@ void write_color(std::ostream &os, color3 pixel_color, int samples_per_pixel)   
     auto g = pixel_color.y;
     auto b = pixel_color.z;
 
-    // Divide color values by the number of samples
+    // Divide color values by the number of samples + color correct using gamma = 2.0
     auto scale = 1.0 / samples_per_pixel;
-    r *= scale;
-    g *= scale;
-    b *= scale;
+    r = sqrt(scale * r);
+    g = sqrt(scale * g);
+    b = sqrt(scale * b);
 
     // Write [0, 255] value of each color component
     os << static_cast<int>(255.999 * clamp(r, 0.0, 0.999)) << " "

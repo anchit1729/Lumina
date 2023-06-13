@@ -5,11 +5,14 @@
 #ifndef LUMINA_HITTABLE_H
 #define LUMINA_HITTABLE_H
 
-#include <ray.h>
+#include <lumina.h>
+
+class material;
 
 struct hit_record   {
     point3 point;
     vec3 normal;
+    shared_ptr<material> material_ptr;
     double root;
     bool front_face;
 
