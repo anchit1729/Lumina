@@ -30,8 +30,10 @@ public:
     }
 
     ray get_ray(double u, double v) const   {
-        vec3 d = lower_left_corner + u*horizontal + v*vertical - origin;
-        point3 o = origin;
+        vec3 rd = lens_radius * random_in_unit_disk();
+        vec3 offset = this->u * rd.x + this->v * rd.y;
+        vec3 d = lower_left_corner + u*horizontal + v*vertical - origin - offset;
+        point3 o = origin + offset;
         return ray(o, d);
     }
 
