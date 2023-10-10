@@ -24,7 +24,7 @@ public:
         origin = lookfrom;
         horizontal = focus_distance * viewport_width * u;
         vertical = focus_distance * viewport_height * v;
-        lower_left_corner = origin - horizontal/2 - vertical/2 - focus_distance * w;
+        upper_left_corner = origin - horizontal/2 - vertical/2 - focus_distance * w;
 
         lens_radius = aperture / 2;
     }
@@ -32,14 +32,14 @@ public:
     ray get_ray(double u, double v) const   {
         vec3 rd = lens_radius * random_in_unit_disk();
         vec3 offset = this->u * rd.x + this->v * rd.y;
-        vec3 d = lower_left_corner + u*horizontal + v*vertical - origin - offset;
+        vec3 d = upper_left_corner + u*horizontal + v*vertical - origin - offset;
         point3 o = origin + offset;
         return ray(o, d);
     }
 
 private:
     point3 origin;
-    point3 lower_left_corner;
+    point3 upper_left_corner;
     vec3 horizontal;
     vec3 vertical;
     vec3 u, v, w;

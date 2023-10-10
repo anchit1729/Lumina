@@ -12,29 +12,36 @@ using std::sqrt;
 class vec3 {
 public:
     double x, y, z;
+
     vec3(): x(0), y(0), z(0) {}
     vec3(double xx, double yy, double zz): x(xx), y(yy), z(zz) {}
+
     bool near_zero()    {
         const auto epsilon = 1e-8;
         return (fabs(x) < epsilon) && (fabs(y) < epsilon) && (fabs(z) < epsilon);
     }
+
     vec3 operator-() const { return vec3(-x, -y, -z); }
+
     double operator[](int i) const {
         if (i == 0) return x;
         if (i == 1) return y;
         if (i == 2) return z;
     }
+
     double& operator[](int i) {
         if (i == 0) return x;
         if (i == 1) return y;
         if (i == 2) return z;
     }
+
     vec3& operator+=(const vec3 &v)   {
         x += v.x;
         y += v.y;
         z += v.z;
         return *this;
     }
+
     vec3& operator-=(const vec3 &v)   {
         x -= v.x;
         y -= v.y;
