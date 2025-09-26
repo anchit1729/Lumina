@@ -6,6 +6,8 @@
 #define LUMINA_MATERIAL_H
 
 #include <lumina.h>
+#include <hittable.h>
+#include <texture.h>
 
 struct hit_record;
 
@@ -18,16 +20,20 @@ public:
 // Class definition for lambertian/diffuse/matte style materials
 class lambertian : public material  {
 public:
-    color3 albedo;
-    lambertian(const color3& color): albedo(color) {}
+    lambertian(const color3& albedo) : tex(make_shared<solid_color>(albedo)) {}
+    lambertian(shared_ptr<texture> tex) : tex(tex) {}
+//    color3 albedo;
     virtual bool scatter(const ray& ray_in, const hit_record& hit_rec, color3& attenuation, ray& scattered_light) const override    {
+        const auto timestamp = ray_in.timestamp;
         auto scatter_direction = hit_rec.normal + random_unit_vector();
         if (scatter_direction.near_zero())  scatter_direction = hit_rec.normal;
         point3 origin = hit_rec.point;
-        scattered_light = ray(origin, scatter_direction);
-        attenuation = albedo;
+        scattered_light = ray(origin, scatter_direction, timestamp);
+        attenuation = tex->value(hit_rec.u, hit_rec.v, hit_rec.point);
         return true;
     }
+private:
+    shared_ptr<texture> tex;
 };
 
 // Class definition for metallic/perfectly reflective materials
@@ -40,7 +46,7 @@ public:
         vec3 reflected = reflect(unit(ray_in.direction), hit_rec.normal);
         point3 origin = hit_rec.point;
         vec3 direction = reflected + fuzz * random_in_unit_sphere();
-        scattered_light = ray(origin, direction);
+        scattered_light = ray(origin, direction, ray_in.timestamp);
         attenuation = albedo;
         return (dot(scattered_light.direction, hit_rec.normal) > 0);
     }
@@ -51,13 +57,13 @@ class dielectric: public material   {
 public:
     double eta; // refractive index
     dielectric(const double n): eta(n) {}
-    virtual bool scatter(const ray& r_in, const hit_record& hit_rec, color3& attenuation, ray& scattered_light) const override  {
+    virtual bool scatter(const ray& ray_in, const hit_record& hit_rec, color3& attenuation, ray& scattered_light) const override  {
         attenuation = color3(1.0, 1.0, 1.0);
         double refraction_ratio = hit_rec.front_face ? (1.0 / eta) : eta;
-        double cos_theta = fmin(dot(-r_in.direction, hit_rec.normal), 1.0);
+        double cos_theta = fmin(dot(-ray_in.direction, hit_rec.normal), 1.0);
         double sin_theta = sqrt(1.0 - cos_theta * cos_theta);
         vec3 direction;
-        vec3 unit_direction = unit(r_in.direction);
+        vec3 unit_direction = unit(ray_in.direction);
         bool no_refraction = refraction_ratio * sin_theta > 1.0;
         if (no_refraction || reflectance(cos_theta, refraction_ratio) > random_double())
             // reflection must occur
@@ -66,7 +72,7 @@ public:
             // can refract light here
             direction = refract(unit_direction, hit_rec.normal, refraction_ratio);
         point3 point = hit_rec.point;
-        scattered_light = ray(point, direction);
+        scattered_light = ray(point, direction, ray_in.timestamp);
         return true;
     }
 private:

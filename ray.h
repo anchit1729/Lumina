@@ -12,8 +12,12 @@ class ray   {
 public:
     vec3 origin;
     vec3 direction;
+    double timestamp;
+
     ray() {}
-    ray(point3 &origin, vec3 &direction): origin(origin), direction(direction)   {}
+    ray(const point3 &origin, const vec3 &direction, const double timestamp): origin(origin), direction(direction), timestamp(timestamp)   {}
+    ray(const point3 &origin, const vec3 &direction): origin(origin), direction(direction), timestamp(0) {}
+
     point3 at(const double t) const  { return origin + direction * t; }
 };
 

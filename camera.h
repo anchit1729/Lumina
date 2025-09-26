@@ -9,11 +9,14 @@
 
 class camera    {
 public:
-    camera(point3 lookfrom, point3 lookat, vec3 upwards, double v_fov, double aspect_ratio, double aperture, double focus_distance)    {
+    camera(point3 lookfrom, point3 lookat, vec3 upwards, double v_fov, double aspect_ratio, double aperture, double focus_distance, interval shutter_time)    {
         auto theta = degrees_to_radians(v_fov);
         auto h = tan(theta / 2);
         auto viewport_height = 2.0 * h;
         auto viewport_width = aspect_ratio * viewport_height;
+
+        open_time = shutter_time.min;
+        close_time = shutter_time.max;
 
         w = unit(lookfrom - lookat);
         u = unit(cross(upwards, w));
@@ -34,16 +37,22 @@ public:
         vec3 offset = this->u * rd.x + this->v * rd.y;
         vec3 d = upper_left_corner + u*horizontal + v*vertical - origin - offset;
         point3 o = origin + offset;
-        return ray(o, d);
+        return ray(o, d, random_double(open_time, close_time));
     }
 
 private:
+    int image_width;
+    int image_height;
+    double distance_to_focus;
+    double aperture;
     point3 origin;
     point3 upper_left_corner;
     vec3 horizontal;
     vec3 vertical;
     vec3 u, v, w;
     double lens_radius;
+    double open_time;
+    double close_time;
 };
 
 #endif //LUMINA_CAMERA_H
